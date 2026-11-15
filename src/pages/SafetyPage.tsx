@@ -15,13 +15,13 @@ const SafetyPage = () => {
             EchoMind is designed for conversation and reflection. It is not equipped to help in situations involving immediate danger, self-harm, or crisis.
           </p>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Reflections are stored in this browser only. They are not encrypted or synced to other devices, and anyone with access to this browser may be able to read them. Clear them from the app menu or your browser data.
+            Your name, roll number, phone number, and reflections are stored in this browser only. They are not encrypted or synced to other devices, and anyone with access to this browser may be able to read them. Sign out from the app menu to clear them.
           </p>
         </div>
       </section>
 
       <section className="pb-24">
-        <div className="container grid gap-6 md:grid-cols-3">
+        <div className="container grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           <article className="rounded-lg border border-border bg-surface p-6">
             <p className="eyelet mb-3">Product boundaries</p>
             <p className="text-[14px] leading-relaxed text-muted-foreground">
@@ -35,15 +35,49 @@ const SafetyPage = () => {
             </p>
           </article>
           <article className="rounded-lg border border-border bg-surface p-6">
-            <p className="eyelet mb-3">Emergency resources</p>
-            <div className="space-y-3 text-[14px] leading-relaxed text-muted-foreground">
-              <p>
-                iCall India: <a className="text-foreground hover:underline" href="https://icallhelpline.org/">icallhelpline.org</a>
-              </p>
-              <p>
-                Vandrevala Foundation: <a className="text-foreground hover:underline" href="https://www.vandrevalafoundation.com/">vandrevalafoundation.com</a>
-              </p>
-            </div>
+            <p className="eyelet mb-3">India helplines</p>
+            <ul className="space-y-4 text-[14px] leading-relaxed text-muted-foreground">
+              <li>
+                <strong className="block text-foreground">Tele-MANAS · 14416</strong>
+                <a className="text-primary hover:underline" href="tel:14416">Call 14416</a>
+                <span> or </span>
+                <a className="text-primary hover:underline" href="tel:18008914416">1-800-891-4416</a>
+                <span className="block text-xs">Ministry of Health and Family Welfare</span>
+                <a className="text-xs text-muted-foreground hover:underline" href="https://telemanas.mohfw.gov.in/">Official website</a>
+              </li>
+              <li>
+                <strong className="block text-foreground">iCALL</strong>
+                <a className="text-primary hover:underline" href="tel:9152987821">9152987821</a>
+                <span className="block text-xs">Mon–Sat, 8:00am–9:00pm</span>
+                <a className="text-xs text-muted-foreground hover:underline" href="https://icallhelpline.org/">Official website</a>
+              </li>
+              <li>
+                <strong className="block text-foreground">Vandrevala Foundation · 24/7</strong>
+                <a className="text-primary hover:underline" href="tel:+919999666555">+91 9999 666 555</a>
+                <span className="block text-xs">Call or WhatsApp</span>
+                <a className="text-xs text-muted-foreground hover:underline" href="https://www.vandrevalafoundation.com/free-counseling">Official website</a>
+              </li>
+              <li>
+                <strong className="block text-foreground">AASRA · 24/7</strong>
+                <a className="text-primary hover:underline" href="tel:+912227546669">+91 22 2754 6669</a>
+                <a className="block text-xs text-muted-foreground hover:underline" href="https://aasra.info/helpline.html">Official website</a>
+              </li>
+            </ul>
+          </article>
+          <a
+            href="tel:+919351198034"
+            className="rounded-lg border border-primary/30 bg-surface p-6 transition-colors hover:border-primary/60 md:hidden"
+          >
+            <p className="eyelet mb-3">Counsellor</p>
+            <h2 className="font-display text-[22px] text-foreground">Pallavi Mam</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Tap to call</p>
+            <p className="mt-1 text-[16px] font-medium text-primary">+91 93519 8034</p>
+          </a>
+          <article className="hidden rounded-lg border border-primary/30 bg-surface p-6 md:block">
+            <p className="eyelet mb-3">Counsellor</p>
+            <h2 className="font-display text-[22px] text-foreground">Pallavi Mam</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Phone</p>
+            <p className="mt-1 text-[16px] font-medium text-foreground">+91 93519 8034</p>
           </article>
         </div>
       </section>

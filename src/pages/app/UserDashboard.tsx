@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import AppShell from "@/components/echomind/app/AppShell";
 import { Button } from "@/components/ui/button";
 import { useLocalMemory } from "@/hooks/use-local-memory";
+import { useLocalProfile } from "@/hooks/use-local-profile";
 
 const UserDashboard = () => {
   const { turns } = useLocalMemory();
+  const { profile } = useLocalProfile();
   const reflections = turns.filter((turn) => turn.role === "you");
   const latestReflection = reflections[reflections.length - 1];
   const recentReflections = reflections.slice(-3).reverse();
+  const firstName = profile?.name.trim().split(/\s+/)[0] || "there";
   const lastEdited = latestReflection
     ? new Date(latestReflection.createdAt).toLocaleString("en-US", {
         month: "short",
@@ -23,7 +26,7 @@ const UserDashboard = () => {
         <header>
           <p className="mb-1 text-[12px] tracking-[0.04em] text-muted-strong">LOCAL MEMORY</p>
           <h1 className="mb-1.5 font-display text-[26px] font-medium leading-tight">
-            Your reflections, on this device.
+            Welcome, {firstName}.
           </h1>
           <p className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
             <span className="block h-[5px] w-[5px] rounded-full bg-status-pending" />

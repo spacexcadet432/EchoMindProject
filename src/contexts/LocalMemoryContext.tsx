@@ -47,11 +47,13 @@ export function LocalMemoryProvider({ children }: { children: ReactNode }) {
       clearStoredMemory();
       turnsRef.current = [];
       setState({ turns: [], storageError: null });
+      return true;
     } catch {
       setState((current) => ({
         ...current,
         storageError: "Local memory could not be cleared in this browser.",
       }));
+      return false;
     }
   }, []);
 

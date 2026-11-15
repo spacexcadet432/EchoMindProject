@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useLocalProfile } from "@/hooks/use-local-profile";
 
 type Item = { to: string; label: string; icon: JSX.Element };
 
@@ -52,6 +53,13 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed = false }: SidebarProps) => {
   const { pathname } = useLocation();
+  const { profile } = useLocalProfile();
+  const initials = profile?.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "LM";
 
   if (collapsed) {
     return (
@@ -103,11 +111,11 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
       <div className="border-t border-border px-5 pt-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-border bg-primary-subtle text-[11px] font-medium text-primary">
-            LM
+            {initials}
           </div>
           <div className="leading-tight">
-            <div className="text-[13px] text-foreground">This device</div>
-            <div className="text-xs text-muted-foreground">Local memory</div>
+            <div className="max-w-[130px] truncate text-[13px] text-foreground">{profile?.name || "This device"}</div>
+            <div className="text-xs text-muted-foreground">Local profile</div>
           </div>
         </div>
       </div>

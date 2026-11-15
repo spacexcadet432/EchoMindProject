@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLocalMemory } from "@/hooks/use-local-memory";
+import { useLocalProfile } from "@/hooks/use-local-profile";
 
 interface ProfileMenuProps {
   align?: "right" | "left";
 }
 
 const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
+  const navigate = useNavigate();
   const { clearMemory } = useLocalMemory();
+  const { profile, clearProfile } = useLocalProfile();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,10 +23,12 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const onClearMemory = () => {
-    if (!window.confirm("Clear all reflections saved in this browser?")) return;
-    clearMemory();
+  const onSignOut = () => {
+    if (!window.confirm("Sign out and clear this device's profile and reflections?")) return;
+    const memoryCleared = clearMemory();
+    const profileCleared = clearProfile();
     setOpen(false);
+    if (memoryCleared && profileCleared) navigate("/", { replace: true });
   };
 
   return (
@@ -50,8 +55,13 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
           style={{ boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04)" }}
         >
           <div className="px-4 pb-2.5 pt-3">
-            <p className="text-[13px] font-medium text-foreground">This device</p>
-            <p className="mt-0.5 truncate text-[11px] text-muted-strong">Saved in this browser only</p>
+            <p className="text-[13px] font-medium text-foreground">{profile?.name || "This device"}</p>
+            <p className="mt-0.5 truncate text-[11px] text-muted-strong">
+              Roll no. {profile?.rollNumber} · local profile
+            </p>
+            <p className="mt-0.5 truncate font-mono text-[10px] text-muted-strong">
+              ID {profile?.id.slice(0, 8)} · this browser only
+            </p>
           </div>
           <div className="h-px w-full bg-border" />
           <Link
@@ -64,11 +74,11 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
           </Link>
           <button
             type="button"
-            onClick={onClearMemory}
+            onClick={onSignOut}
             className="block w-full px-4 py-2.5 text-left text-[13px] text-destructive transition-colors hover:bg-surface-2"
             role="menuitem"
           >
-            Clear local memory
+            Sign out and clear this device
           </button>
         </div>
       )}

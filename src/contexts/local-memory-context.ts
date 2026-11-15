@@ -8,7 +8,7 @@ export type LocalMemoryState = {
 
 export type LocalMemoryContextValue = LocalMemoryState & {
   appendTurn: (turn: Omit<ReflectionTurn, "id">) => void;
-  clearMemory: () => void;
+  clearMemory: () => boolean;
 };
 
 export const LocalMemoryContext = createContext<LocalMemoryContextValue | undefined>(undefined);
