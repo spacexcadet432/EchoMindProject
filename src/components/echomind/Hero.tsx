@@ -1,12 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import AmbientVisual from "./AmbientVisual";
-import { useAuth } from "@/contexts/AuthContext";
 
 const Hero = () => {
-  const { user } = useAuth();
-  const startTalkingTo = user ? "/app/conversations" : "/auth/sign-in";
-
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-16">
       <div className="container grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
@@ -25,13 +21,13 @@ const Hero = () => {
           </h1>
 
           <p className="mt-8 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
-            EchoMind is a private conversation space for the moments you can&apos;t
-            keep everything in your head anymore.
+            EchoMind is a personal reflection space saved in this browser for the
+            moments you can&apos;t keep everything in your head anymore.
           </p>
 
           <div className="mt-10 flex items-center gap-6 flex-wrap">
             <Link
-              to={startTalkingTo}
+              to="/app/conversations"
               className="group inline-flex items-center h-12 px-6 rounded-md bg-primary text-primary-foreground text-sm font-medium tracking-tight transition-all duration-150 hover:bg-primary-hover hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Start talking

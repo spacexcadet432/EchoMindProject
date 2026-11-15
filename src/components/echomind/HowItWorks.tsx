@@ -13,8 +13,8 @@ const steps = [
   },
   {
     n: "03",
-    title: "Continue where you left off",
-    body: "EchoMind remembers the people, situations, and thoughts that matter so you don't have to start over every time.",
+    title: "Return on this device",
+    body: "Your reflections are saved in this browser. They do not sync across devices and can be cleared at any time.",
   },
 ];
 

@@ -1,38 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import AppShell from "@/components/echomind/app/AppShell";
 import { Button } from "@/components/ui/button";
+import { useLocalMemory } from "@/hooks/use-local-memory";
 import { cn } from "@/lib/utils";
-
-interface Turn {
-  role: "you" | "echo";
-  ts?: string;
-  body: string;
-}
-
-const seedTurns: Turn[] = [
-  {
-    role: "you",
-    ts: "Sunday, Apr 19 — 11:44pm",
-    body:
-      "I keep thinking about the conversation with my sister. Not the argument itself — more the feeling that I could tell she was waiting for me to say something first. I didn't. And now it's just sitting there.",
-  },
-  {
-    role: "echo",
-    body:
-      "You're noticing the silence more than the words. What do you imagine she was waiting to hear — and what made it feel hard to offer in the moment?",
-  },
-  {
-    role: "you",
-    ts: "Tuesday, Apr 21 — 2:10am",
-    body:
-      "Still thinking about it. What bothers me most isn't what she said — it's that I agreed with her in the moment even though I didn't mean it. I've been doing that a lot lately. Going along so things stay smooth. I'm not sure why I can't just say what I actually think.",
-  },
-  {
-    role: "echo",
-    body:
-      "The pattern you're naming — agreeing to keep the temperature down — sounds protective. Of whom, would you say? And what do you think it costs you over time?",
-  },
-];
 
 const echoFor = (text: string): string => {
   const t = text.trim().toLowerCase();
@@ -43,8 +13,17 @@ const echoFor = (text: string): string => {
   return "What feels unfinished in this for you right now?";
 };
 
+const formatTurnDate = (value: string) =>
+  new Date(value).toLocaleString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
 const ReflectionInterface = () => {
-  const [turns, setTurns] = useState<Turn[]>(seedTurns);
+  const { turns, appendTurn } = useLocalMemory();
   const [draft, setDraft] = useState("");
   const [focused, setFocused] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
@@ -61,19 +40,19 @@ const ReflectionInterface = () => {
   const save = () => {
     if (!draft.trim()) return;
     const now = new Date();
-    const ts =
-      now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }) +
-      " — " +
-      now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
     const body = draft.trim();
-    setTurns((prev) => [...prev, { role: "you", ts, body }]);
+    appendTurn({ role: "you", createdAt: now.toISOString(), body });
     setDraft("");
     setIsResponding(true);
     setLoadingLabel("Listening...");
     setTimeout(() => setLoadingLabel("Thinking..."), 280);
     setTimeout(() => setLoadingLabel("Still here..."), 520);
     setTimeout(() => {
-      setTurns((prev) => [...prev, { role: "echo", body: echoFor(body) }]);
+      appendTurn({
+        role: "echo",
+        createdAt: new Date().toISOString(),
+        body: echoFor(body),
+      });
       setIsResponding(false);
     }, 600);
   };
@@ -95,7 +74,7 @@ const ReflectionInterface = () => {
             What&apos;s been on your mind?
           </p>
           <div className="mt-1 flex items-center justify-between text-[12px] text-muted-strong">
-            <span>Continuous conversation memory enabled</span>
+            <span>Saved in this browser only</span>
             <span className="inline-flex items-center gap-1.5 rounded border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
               <span className="block h-[5px] w-[5px] rounded-full bg-status-active" />
               Present and listening
@@ -121,7 +100,7 @@ const ReflectionInterface = () => {
               const lastInGroup = !next || next.role !== turn.role;
               return (
                 <article
-                  key={i}
+                  key={turn.id}
                   className={cn(
                     "group relative pb-5",
                     lastInGroup && i < turns.length - 1 && "mb-5 border-b border-border",
@@ -137,8 +116,8 @@ const ReflectionInterface = () => {
                     >
                       {turn.role === "you" ? "You" : "EchoMind"}
                     </span>
-                    {turn.ts && (
-                      <span className="text-[11px] text-muted-strong">{turn.ts}</span>
+                    {turn.role === "you" && (
+                      <span className="text-[11px] text-muted-strong">{formatTurnDate(turn.createdAt)}</span>
                     )}
                   </div>
                   <p
@@ -179,7 +158,7 @@ const ReflectionInterface = () => {
             className="block min-h-[74px] w-full resize-none rounded-md border border-border bg-surface-2 px-4 py-3 font-sans text-[14px] leading-[1.7] text-foreground outline-none transition-colors placeholder:text-muted-strong focus:border-primary"
           />
           <div className="mt-2.5 flex items-center justify-between">
-            <span className="text-[11px] text-muted-strong">⌘ + Enter to save</span>
+            <span className="text-[11px] text-muted-strong">Saved only on this device · ⌘ + Enter to send</span>
             <div className="flex items-center gap-3">
               <span
                 className={cn(

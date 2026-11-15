@@ -14,6 +14,9 @@ const SafetyPage = () => {
           <p className="mt-6 text-[16px] leading-relaxed text-muted-foreground max-w-3xl">
             EchoMind is designed for conversation and reflection. It is not equipped to help in situations involving immediate danger, self-harm, or crisis.
           </p>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Reflections are stored in this browser only. They are not encrypted or synced to other devices, and anyone with access to this browser may be able to read them. Clear them from the app menu or your browser data.
+          </p>
         </div>
       </section>
 
@@ -22,7 +25,7 @@ const SafetyPage = () => {
           <article className="rounded-lg border border-border bg-surface p-6">
             <p className="eyelet mb-3">Product boundaries</p>
             <p className="text-[14px] leading-relaxed text-muted-foreground">
-              EchoMind is a private conversation space. It does not provide emergency intervention or urgent response.
+              EchoMind is a local reflection space. It does not provide emergency intervention or urgent response.
             </p>
           </article>
           <article className="rounded-lg border border-border bg-surface p-6">

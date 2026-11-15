@@ -1,20 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { profileFromUser } from "@/lib/profile";
+import { useLocalMemory } from "@/hooks/use-local-memory";
 
 interface ProfileMenuProps {
   align?: "right" | "left";
 }
 
 const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { clearMemory } = useLocalMemory();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  const display = profileFromUser(user);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -24,10 +20,10 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const onLogout = async () => {
-    await signOut();
+  const onClearMemory = () => {
+    if (!window.confirm("Clear all reflections saved in this browser?")) return;
+    clearMemory();
     setOpen(false);
-    navigate("/", { replace: true });
   };
 
   return (
@@ -41,7 +37,7 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        {display.initials}
+        LM
       </button>
 
       {open && (
@@ -54,8 +50,8 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
           style={{ boxShadow: "0 1px 2px hsl(var(--foreground) / 0.04)" }}
         >
           <div className="px-4 pb-2.5 pt-3">
-            <p className="text-[13px] font-medium text-foreground">{display.name || "You"}</p>
-            <p className="mt-0.5 truncate text-[11px] text-muted-strong">{display.email || "Private session"}</p>
+            <p className="text-[13px] font-medium text-foreground">This device</p>
+            <p className="mt-0.5 truncate text-[11px] text-muted-strong">Saved in this browser only</p>
           </div>
           <div className="h-px w-full bg-border" />
           <Link
@@ -68,11 +64,11 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
           </Link>
           <button
             type="button"
-            onClick={() => void onLogout()}
-            className="block w-full px-4 py-2.5 text-left text-[13px] text-foreground transition-colors hover:bg-surface-2"
+            onClick={onClearMemory}
+            className="block w-full px-4 py-2.5 text-left text-[13px] text-destructive transition-colors hover:bg-surface-2"
             role="menuitem"
           >
-            Logout
+            Clear local memory
           </button>
         </div>
       )}

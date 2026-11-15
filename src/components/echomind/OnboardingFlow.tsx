@@ -1,4 +1,5 @@
 import Reveal from "./Reveal";
+import { Link } from "react-router-dom";
 
 const steps = [
   "You don't have to phrase it perfectly.",
@@ -24,12 +25,12 @@ const OnboardingFlow = () => {
         </div>
         <Reveal delay={0.2}>
           <div className="mt-8">
-            <a
-              href="/auth/sign-in"
+            <Link
+              to="/app/conversations"
               className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-medium tracking-tight transition-all duration-150 hover:bg-primary-hover hover:-translate-y-px"
             >
-              Open EchoMind
-            </a>
+              Start a local reflection
+            </Link>
           </div>
         </Reveal>
       </div>

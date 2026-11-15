@@ -79,7 +79,7 @@ const AmbientVisual = () => {
         {/* Footer meta */}
         <div className="flex items-center justify-between border-t border-border/60 pt-3">
           <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-strong">
-            Private · memory enabled
+            Local only · memory enabled
           </span>
           <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-strong">
             ⌘ + ⏎

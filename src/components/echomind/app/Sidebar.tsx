@@ -1,7 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { profileFromUser } from "@/lib/profile";
-import { useAuth } from "@/contexts/AuthContext";
 
 type Item = { to: string; label: string; icon: JSX.Element };
 
@@ -54,8 +52,6 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed = false }: SidebarProps) => {
   const { pathname } = useLocation();
-  const { user } = useAuth();
-  const { name, initials } = profileFromUser(user);
 
   if (collapsed) {
     return (
@@ -107,11 +103,11 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
       <div className="border-t border-border px-5 pt-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-border bg-primary-subtle text-[11px] font-medium text-primary">
-            {initials}
+            LM
           </div>
           <div className="leading-tight">
-            <div className="text-[13px] text-foreground">{name || "You"}</div>
-            <div className="text-xs text-muted-foreground">Settings</div>
+            <div className="text-[13px] text-foreground">This device</div>
+            <div className="text-xs text-muted-foreground">Local memory</div>
           </div>
         </div>
       </div>

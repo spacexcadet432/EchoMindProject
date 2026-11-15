@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import ProfileMenu from "./ProfileMenu";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocalMemory } from "@/hooks/use-local-memory";
 
 interface AppShellProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface AppShellProps {
 const AppShell = ({ children, sidebarCollapsed = false }: AppShellProps) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const { storageError } = useLocalMemory();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background font-sans text-foreground antialiased">
@@ -49,6 +51,11 @@ const AppShell = ({ children, sidebarCollapsed = false }: AppShellProps) => {
           )}
           <ProfileMenu />
         </header>
+        {storageError && (
+          <p role="alert" className="border-b border-destructive/30 bg-destructive/5 px-6 py-2 text-sm text-destructive">
+            {storageError}
+          </p>
+        )}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
       </div>
     </div>

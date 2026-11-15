@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
 import Reveal from "./Reveal";
-import { useAuth } from "@/contexts/AuthContext";
 
 const FinalCTA = () => {
-  const { user } = useAuth();
-  const startTalkingTo = user ? "/app/conversations" : "/auth/sign-in";
-
   return (
     <section id="safety" className="py-32 sm:py-40 border-t border-border">
       <div className="container max-w-3xl">
@@ -22,7 +18,7 @@ const FinalCTA = () => {
             <a href="/safety" className="text-sm text-primary hover:text-primary-hover transition-colors duration-150">
               Read safety information
             </a>
-            <Link to={startTalkingTo} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
+            <Link to="/app/conversations" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
               Start talking
             </Link>
           </div>

@@ -1,34 +1,23 @@
-import { useCallback, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import ProfileMenu from "@/components/echomind/app/ProfileMenu";
-import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const navLinkClass =
   "text-sm text-muted-foreground hover:text-foreground transition-colors duration-150";
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const { user, signInWithGoogle, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
-  const conversationsTo = user ? "/app/conversations" : "/auth/sign-in";
-  const memoryTo = user ? "/app/memory" : "/auth/sign-in";
-
-  const mobileNavLinks = useMemo(
-    () => [
-      { to: "/", label: "Home" },
-      { to: conversationsTo, label: "Conversations" },
-      { to: memoryTo, label: "Memory" },
-      { to: "/safety", label: "Safety" },
-    ],
-    [user, conversationsTo, memoryTo],
-  );
+  const mobileNavLinks = [
+    { to: "/", label: "Home" },
+    { to: "/app/conversations", label: "Conversations" },
+    { to: "/app/memory", label: "Memory" },
+    { to: "/safety", label: "Safety" },
+  ];
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -42,31 +31,25 @@ const Navbar = () => {
           <Link to="/" className={navLinkClass}>
             Home
           </Link>
-          <Link to={conversationsTo} className={navLinkClass}>
+          <Link to="/app/conversations" className={navLinkClass}>
             Conversations
           </Link>
-          <Link to={memoryTo} className={navLinkClass}>
+          <Link to="/app/memory" className={navLinkClass}>
             Memory
           </Link>
           <Link to="/safety" className={navLinkClass}>
             Safety
           </Link>
-          {!user ? (
-            <Link
-              to="/auth/sign-in"
-              className="shrink-0 text-sm px-4 h-9 inline-flex items-center rounded-md border border-border bg-transparent hover:bg-surface-2 text-foreground transition-colors duration-150"
-            >
-              Start talking
-            </Link>
-          ) : (
-            <ProfileMenu />
-          )}
+          <Link
+            to="/app/conversations"
+            className="shrink-0 text-sm px-4 h-9 inline-flex items-center rounded-md border border-border bg-transparent hover:bg-surface-2 text-foreground transition-colors duration-150"
+          >
+            Start talking
+          </Link>
         </div>
 
         {/* Mobile */}
         <div className="flex md:hidden shrink-0 items-center gap-2">
-          {user ? <ProfileMenu /> : null}
-
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button
@@ -104,32 +87,15 @@ const Navbar = () => {
               </nav>
 
               <div className="border-t border-border px-6 py-5">
-                {!user ? (
-                  <Button
-                    type="button"
-                    className="w-full"
-                    variant="outline"
-                    onClick={async () => {
-                      closeMobile();
-                      await signInWithGoogle();
-                    }}
+                <SheetClose asChild>
+                  <Link
+                    to="/app/conversations"
+                    onClick={closeMobile}
+                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border text-sm text-foreground transition-colors hover:bg-surface-2"
                   >
-                    Continue with Google
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full text-destructive hover:bg-destructive/5 hover:text-destructive"
-                    onClick={async () => {
-                      await signOut();
-                      closeMobile();
-                      navigate("/", { replace: true });
-                    }}
-                  >
-                    Logout
-                  </Button>
-                )}
+                    Start talking
+                  </Link>
+                </SheetClose>
               </div>
             </SheetContent>
           </Sheet>
