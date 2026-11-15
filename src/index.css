@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* EchoMind design system — warm neutral, editorial, single accent */
+
+@layer base {
+  :root {
+    /* Warm neutrals */
+    --background: 42 24% 94%;          /* #F5F3EE */
+    --foreground: 30 10% 10%;          /* #1C1A17 */
+
+    --surface: 45 22% 97%;             /* #FAFAF7 */
+    --surface-2: 44 18% 91%;           /* #EDEBE4 */
+
+    --card: 45 22% 97%;
+    --card-foreground: 30 10% 10%;
+
+    --popover: 45 22% 97%;
+    --popover-foreground: 30 10% 10%;
+
+    /* Accent — slate teal, used ONLY for interactions */
+    --primary: 204 28% 33%;            /* #3D5A6C */
+    --primary-foreground: 45 22% 97%;
+    --primary-hover: 207 30% 26%;      /* #2E4455 */
+    --accent-subtle: 204 30% 93%;      /* #EBF0F3 */
+
+    --secondary: 44 18% 91%;
+    --secondary-foreground: 30 10% 10%;
+
+    --muted: 44 18% 91%;
+    --muted-foreground: 36 8% 40%;     /* #6B6760 */
+    --muted-strong: 36 5% 55%;         /* #A09D97 */
+
+    --accent: 204 28% 33%;
+    --accent-foreground: 45 22% 97%;
+
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 45 22% 97%;
+
+    /* Status — quiet, never alarm-bright */
+    --status-active: 140 18% 46%;      /* #5E8A6E sage */
+    --status-pending: 32 50% 53%;      /* #C4924A amber */
+    --status-silent: 218 8% 60%;       /* #9097A3 */
+    --status-pending-bg: 32 60% 95%;   /* #FBF4EC */
+
+    --border: 42 14% 83%;              /* #D9D6CE */
+    --input: 42 14% 83%;
+    --ring: 204 28% 33%;
+
+    --radius: 0.375rem;                /* 6px buttons */
+
+    --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-feature-settings: "liga", "dlig";
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+  .eyelet {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+  .hairline {
+    background: hsl(var(--border));
+  }
+}
