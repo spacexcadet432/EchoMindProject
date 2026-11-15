@@ -14,6 +14,12 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
   const { profile, clearProfile } = useLocalProfile();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const initials = profile?.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "LM";
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -42,7 +48,7 @@ const ProfileMenu = ({ align = "right" }: ProfileMenuProps) => {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        LM
+        {initials}
       </button>
 
       {open && (

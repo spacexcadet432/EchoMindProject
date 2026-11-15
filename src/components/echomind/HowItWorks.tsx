@@ -4,7 +4,7 @@ const steps = [
   {
     n: "01",
     title: "Open EchoMind",
-    body: "No setup. No pressure. Just open the conversation.",
+    body: "Create a local profile once in this browser, then open the conversation.",
   },
   {
     n: "02",
