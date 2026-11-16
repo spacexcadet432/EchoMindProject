@@ -19,7 +19,7 @@ const ReflectionInterface = () => {
   const [draft, setDraft] = useState("");
   const [focused, setFocused] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
-  const [responseError, setResponseError] = useState(false);
+  const [responseError, setResponseError] = useState<string | null>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const crisisLocked = hasCrisisMessage(turns);
@@ -32,7 +32,7 @@ const ReflectionInterface = () => {
 
   const requestReply = async (history: typeof turns) => {
     setIsResponding(true);
-    setResponseError(false);
+    setResponseError(null);
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -44,7 +44,11 @@ const ReflectionInterface = () => {
           })),
         }),
       });
-      const result = await response.json() as { reply?: unknown; error?: string };
+      const result = await response.json() as {
+        reply?: unknown;
+        error?: string;
+        providerStatus?: number;
+      };
       if (!response.ok) {
         if (result.error === "crisis_detected") {
           appendTurn({
@@ -54,7 +58,28 @@ const ReflectionInterface = () => {
           });
           return;
         }
-        throw new Error("Chat API request failed.");
+        if (result.error === "nvidia_configuration_missing") {
+          throw new Error("The server is missing NVIDIA_API_KEY or NVIDIA_MODEL. Restart the local server after editing .env, or add both variables to Vercel.");
+        }
+        if (result.error === "nvidia_configuration_invalid") {
+          throw new Error("NVIDIA_API_URL must be a valid HTTPS URL.");
+        }
+        if (result.providerStatus === 401) {
+          throw new Error("NVIDIA rejected the API key (401). Check the key and its access.");
+        }
+        if (result.providerStatus === 403) {
+          throw new Error("NVIDIA denied access (403). Check whether this model is enabled for your account.");
+        }
+        if (result.providerStatus === 404) {
+          throw new Error("NVIDIA could not find this model or endpoint (404). Check NVIDIA_MODEL and NVIDIA_API_URL.");
+        }
+        if (result.providerStatus === 429) {
+          throw new Error("NVIDIA rate limit or usage quota reached (429). Check your account limits.");
+        }
+        if (result.providerStatus) {
+          throw new Error(`NVIDIA returned HTTP ${result.providerStatus}. Check the model, endpoint, and account access.`);
+        }
+        throw new Error("The chat service returned an unexpected error.");
       }
       if (typeof result.reply !== "string" || !result.reply.trim()) {
         throw new Error("Chat API returned an empty reply.");
@@ -64,8 +89,12 @@ const ReflectionInterface = () => {
         createdAt: new Date().toISOString(),
         body: result.reply.trim(),
       });
-    } catch {
-      setResponseError(true);
+    } catch (error) {
+      setResponseError(
+        error instanceof Error
+          ? error.message
+          : "EchoMind couldn't reach the chat service. Check your connection.",
+      );
     } finally {
       setIsResponding(false);
     }
@@ -79,7 +108,7 @@ const ReflectionInterface = () => {
     const history = [...turns, { ...userTurn, id: "pending" }];
     appendTurn(userTurn);
     setDraft("");
-    setResponseError(false);
+    setResponseError(null);
 
     if (isCrisisMessage(body)) {
       appendTurn({
@@ -101,7 +130,7 @@ const ReflectionInterface = () => {
     }
     clearMemory();
     setDraft("");
-    setResponseError(false);
+    setResponseError(null);
   };
 
   const onKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -230,7 +259,7 @@ const ReflectionInterface = () => {
               </div>
               {responseError && (
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-destructive" role="alert">
-                  <span>EchoMind couldn&apos;t get a reply. Check your connection or NVIDIA API configuration.</span>
+                  <span>{responseError}</span>
                   <Button type="button" variant="outline" size="sm" onClick={() => void requestReply(turns)}>
                     Retry reply
                   </Button>

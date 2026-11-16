@@ -12,6 +12,11 @@ const localNvidiaApiPlugin: Plugin = {
       void handleNvidiaChat(req, res).catch(next);
     });
   },
+  configurePreviewServer(server) {
+    server.middlewares.use("/api/chat", (req, res, next) => {
+      void handleNvidiaChat(req, res).catch(next);
+    });
+  },
 };
 
 // https://vitejs.dev/config/

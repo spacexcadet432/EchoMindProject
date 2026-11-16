@@ -140,7 +140,10 @@ export async function handleNvidiaChat(req: ChatRequest, res: ServerResponse) {
 
     if (!response.ok) {
       console.error(`NVIDIA chat request failed with status ${response.status}.`);
-      sendJson(res, 502, { error: "nvidia_request_failed" });
+      sendJson(res, 502, {
+        error: "nvidia_request_failed",
+        providerStatus: response.status,
+      });
       return;
     }
 
