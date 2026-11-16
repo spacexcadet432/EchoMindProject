@@ -1,17 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/echomind/app/AppShell";
 import { Button } from "@/components/ui/button";
 import { useLocalMemory } from "@/hooks/use-local-memory";
+import { CRISIS_SUPPORT_MESSAGE, hasCrisisMessage, isCrisisMessage } from "@/lib/crisisSafety";
 import { cn } from "@/lib/utils";
-
-const echoFor = (text: string): string => {
-  const t = text.trim().toLowerCase();
-  if (t.length < 40)
-    return "I'm here with you. If you stay with that for another moment, what feels most difficult to say out loud?";
-  if (t.includes("but") || t.includes("though"))
-    return "I can hear both sides in what you wrote. If they were both true at once, what would you want to say first?";
-  return "What feels unfinished in this for you right now?";
-};
 
 const formatTurnDate = (value: string) =>
   new Date(value).toLocaleString("en-US", {
@@ -23,13 +15,14 @@ const formatTurnDate = (value: string) =>
   });
 
 const ReflectionInterface = () => {
-  const { turns, appendTurn } = useLocalMemory();
+  const { turns, appendTurn, clearMemory } = useLocalMemory();
   const [draft, setDraft] = useState("");
   const [focused, setFocused] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
-  const [loadingLabel, setLoadingLabel] = useState("Listening...");
+  const [responseError, setResponseError] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const crisisLocked = hasCrisisMessage(turns);
 
   const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
 
@@ -37,29 +30,83 @@ const ReflectionInterface = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns.length]);
 
-  const save = () => {
-    if (!draft.trim()) return;
-    const now = new Date();
-    const body = draft.trim();
-    appendTurn({ role: "you", createdAt: now.toISOString(), body });
-    setDraft("");
+  const requestReply = async (history: typeof turns) => {
     setIsResponding(true);
-    setLoadingLabel("Listening...");
-    setTimeout(() => setLoadingLabel("Thinking..."), 280);
-    setTimeout(() => setLoadingLabel("Still here..."), 520);
-    setTimeout(() => {
+    setResponseError(false);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history.slice(-20).map((turn) => ({
+            role: turn.role === "you" ? "user" : "assistant",
+            content: turn.body,
+          })),
+        }),
+      });
+      const result = await response.json() as { reply?: unknown; error?: string };
+      if (!response.ok) {
+        if (result.error === "crisis_detected") {
+          appendTurn({
+            role: "echo",
+            createdAt: new Date().toISOString(),
+            body: CRISIS_SUPPORT_MESSAGE,
+          });
+          return;
+        }
+        throw new Error("Chat API request failed.");
+      }
+      if (typeof result.reply !== "string" || !result.reply.trim()) {
+        throw new Error("Chat API returned an empty reply.");
+      }
       appendTurn({
         role: "echo",
         createdAt: new Date().toISOString(),
-        body: echoFor(body),
+        body: result.reply.trim(),
       });
+    } catch {
+      setResponseError(true);
+    } finally {
       setIsResponding(false);
-    }, 600);
+    }
   };
 
-  const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
+  const save = () => {
+    const body = draft.trim();
+    if (!body || isResponding || crisisLocked) return;
+
+    const userTurn = { role: "you" as const, createdAt: new Date().toISOString(), body };
+    const history = [...turns, { ...userTurn, id: "pending" }];
+    appendTurn(userTurn);
+    setDraft("");
+    setResponseError(false);
+
+    if (isCrisisMessage(body)) {
+      appendTurn({
+        role: "echo",
+        createdAt: new Date().toISOString(),
+        body: CRISIS_SUPPORT_MESSAGE,
+      });
+      return;
+    }
+    void requestReply(history);
+  };
+
+  const startNewSession = () => {
+    if (
+      turns.length > 0 &&
+      !window.confirm("Start a new session? This clears all saved conversation turns in this browser.")
+    ) {
+      return;
+    }
+    clearMemory();
+    setDraft("");
+    setResponseError(false);
+  };
+
+  const onKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
       save();
     }
   };
@@ -67,43 +114,42 @@ const ReflectionInterface = () => {
   return (
     <AppShell sidebarCollapsed={focused}>
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Sticky prompt header */}
         <header className="flex-shrink-0 border-b border-border bg-background px-7 py-4">
-          <p className="mb-1 text-[11px] uppercase tracking-[0.08em] text-muted-strong">Conversations</p>
-          <p className="font-display text-[17px] font-medium italic text-foreground">
-            What&apos;s been on your mind?
-          </p>
-          <div className="mt-1 flex items-center justify-between text-[12px] text-muted-strong">
-            <span>Saved in this browser only</span>
-            <span className="inline-flex items-center gap-1.5 rounded border border-border bg-surface-2 px-2 py-0.5 text-[11px]">
-              <span className="block h-[5px] w-[5px] rounded-full bg-status-active" />
-              Present and listening
-            </span>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="mb-1 text-[11px] uppercase tracking-[0.08em] text-muted-strong">Conversations</p>
+              <p className="font-display text-[17px] font-medium italic text-foreground">
+                What&apos;s been on your mind?
+              </p>
+              <p className="mt-1 text-[12px] text-muted-strong">
+                Saved in this browser · messages sent to NVIDIA AI for replies
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={startNewSession} disabled={isResponding}>
+              New session
+            </Button>
           </div>
         </header>
 
-        {/* Entries — editorial, no chat bubbles */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-7">
           {turns.length === 0 ? (
             <div className="mx-auto mt-16 max-w-[460px] text-center">
               <p className="eyelet mb-4">No conversation yet</p>
-              <p className="font-display text-[22px] italic leading-snug text-foreground">
-                Start anywhere.
-              </p>
+              <p className="font-display text-[22px] italic leading-snug text-foreground">Start anywhere.</p>
               <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
                 Say what&apos;s on your mind. You don&apos;t need to phrase it perfectly.
               </p>
             </div>
           ) : (
-            turns.map((turn, i) => {
-              const next = turns[i + 1];
+            turns.map((turn, index) => {
+              const next = turns[index + 1];
               const lastInGroup = !next || next.role !== turn.role;
               return (
                 <article
                   key={turn.id}
                   className={cn(
                     "group relative pb-5",
-                    lastInGroup && i < turns.length - 1 && "mb-5 border-b border-border",
+                    lastInGroup && index < turns.length - 1 && "mb-5 border-b border-border",
                     !lastInGroup && "mb-3",
                   )}
                 >
@@ -134,45 +180,67 @@ const ReflectionInterface = () => {
               );
             })
           )}
-          {isResponding && (
-            <div className="pt-2 text-[13px] text-muted-foreground">{loadingLabel}</div>
+          {isResponding && <div role="status" className="pt-2 text-[13px] text-muted-foreground">Thinking...</div>}
+          {crisisLocked && (
+            <section role="alert" className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-5">
+              <p className="text-sm leading-relaxed text-foreground">{CRISIS_SUPPORT_MESSAGE}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button asChild>
+                  <a href="tel:+919351198034">Call Pallavi Mam · +91 93519 8034</a>
+                </Button>
+                <Button asChild variant="outline">
+                  <a href="tel:14416">Call Tele-MANAS · 14416</a>
+                </Button>
+                <Button asChild variant="outline">
+                  <a href="tel:112">Emergency · 112</a>
+                </Button>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                This conversation is paused. Please reach out to someone you trust or use the Safety page for more support.
+              </p>
+            </section>
           )}
         </div>
 
-        {/* Composer */}
         <div className="flex-shrink-0 border-t border-border bg-background px-7 pb-5 pt-4">
-          <textarea
-            ref={taRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={onKey}
-            placeholder={
-              turns.length === 0
-                ? "What's been on your mind?"
-                : turns.length % 2 === 0
-                  ? "You can start anywhere."
-                  : "Say what you didn't say earlier."
-            }
-            className="block min-h-[74px] w-full resize-none rounded-md border border-border bg-surface-2 px-4 py-3 font-sans text-[14px] leading-[1.7] text-foreground outline-none transition-colors placeholder:text-muted-strong focus:border-primary"
-          />
-          <div className="mt-2.5 flex items-center justify-between">
-            <span className="text-[11px] text-muted-strong">Saved only on this device · ⌘ + Enter to send</span>
-            <div className="flex items-center gap-3">
-              <span
-                className={cn(
-                  "text-[11px] text-muted-strong transition-opacity",
-                  draft.trim() ? "opacity-100" : "opacity-0",
-                )}
-              >
-                {wordCount} word{wordCount !== 1 ? "s" : ""}
-              </span>
-              <Button onClick={save} disabled={!draft.trim()} size="sm">
-                Send
-              </Button>
-            </div>
-          </div>
+          {crisisLocked ? (
+            <p className="text-sm text-muted-foreground">This session is paused. Start a new session only when you are ready.</p>
+          ) : (
+            <>
+              <textarea
+                ref={taRef}
+                value={draft}
+                disabled={isResponding}
+                onChange={(event) => setDraft(event.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                onKeyDown={onKey}
+                placeholder="What's been on your mind?"
+                className="block min-h-[74px] w-full resize-none rounded-md border border-border bg-surface-2 px-4 py-3 font-sans text-[14px] leading-[1.7] text-foreground outline-none transition-colors placeholder:text-muted-strong focus:border-primary disabled:opacity-60"
+              />
+              <div className="mt-2.5 flex items-center justify-between">
+                <span className="text-[11px] text-muted-strong">
+                  Sent to NVIDIA AI for replies · saved in this browser
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className={cn("text-[11px] text-muted-strong transition-opacity", draft.trim() ? "opacity-100" : "opacity-0")}>
+                    {wordCount} word{wordCount !== 1 ? "s" : ""}
+                  </span>
+                  <Button onClick={save} disabled={!draft.trim() || isResponding} size="sm">
+                    Send
+                  </Button>
+                </div>
+              </div>
+              {responseError && (
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-destructive" role="alert">
+                  <span>EchoMind couldn&apos;t get a reply. Check your connection or NVIDIA API configuration.</span>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void requestReply(turns)}>
+                    Retry reply
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </AppShell>

@@ -122,7 +122,7 @@ const SignIn = () => {
               className="mt-0.5"
             />
             <span>
-              I understand my name, roll number, phone number, and reflections are stored only in this browser, are not encrypted, and can be read by someone with access to this browser.
+              I understand my profile and reflections are stored in this browser, are not encrypted, and can be read by someone with access to it. When I send a message, it and recent conversation context are sent to the configured NVIDIA AI service to generate a reply.
             </span>
           </label>
           {(formError || storageError) && (
