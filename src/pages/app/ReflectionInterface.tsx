@@ -219,9 +219,6 @@ const ReflectionInterface = () => {
                 className="block min-h-[74px] w-full resize-none rounded-md border border-border bg-surface-2 px-4 py-3 font-sans text-[14px] leading-[1.7] text-foreground outline-none transition-colors placeholder:text-muted-strong focus:border-primary disabled:opacity-60"
               />
               <div className="mt-2.5 flex items-center justify-between">
-                <span className="text-[11px] text-muted-strong">
-                  Sent to NVIDIA AI for replies · saved in this browser
-                </span>
                 <div className="flex items-center gap-3">
                   <span className={cn("text-[11px] text-muted-strong transition-opacity", draft.trim() ? "opacity-100" : "opacity-0")}>
                     {wordCount} word{wordCount !== 1 ? "s" : ""}
