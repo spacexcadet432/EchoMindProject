@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/echomind/app/AppShell";
 import { Button } from "@/components/ui/button";
 import { useLocalMemory } from "@/hooks/use-local-memory";
+import { readChatApiResponse } from "@/lib/chatApiResponse";
 import { CRISIS_SUPPORT_MESSAGE, hasCrisisMessage, isCrisisMessage } from "@/lib/crisisSafety";
 import { cn } from "@/lib/utils";
 
@@ -44,11 +45,7 @@ const ReflectionInterface = () => {
           })),
         }),
       });
-      const result = await response.json() as {
-        reply?: unknown;
-        error?: string;
-        providerStatus?: number;
-      };
+      const result = await readChatApiResponse(response);
       if (!response.ok) {
         if (result.error === "crisis_detected") {
           appendTurn({
